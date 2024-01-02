@@ -12,9 +12,53 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
-import React from "react";
-
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@chakra-ui/react';
+import { useUser } from "./userContext";
 function Login() {
+  const { setUser } = useUser();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  let navigate = useNavigate();
+  const toast = useToast();
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/v1/auth/login", {
+        email: email,
+        password: password,
+      });
+
+      console.log(response.data); // In kết quả trả về từ server vào console
+      setTimeout(() => {
+        navigate('/map');
+      }, 2000);
+      setUser(email);
+      // Hiển thị thông báo khi đăng nhập thành công
+      toast({
+        title: 'Login successful.',
+        description: "You've successfully logged in.",
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+
+    } catch (error) {
+      console.error(error); // Xử lý lỗi nếu có
+      // Hiển thị thông báo khi đăng nhập thất bại
+      toast({
+        title: 'Login failed.',
+        description: "Please check your credentials and try again.",
+        status: 'error',
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
+
   return (
     <Box
       w={["full", "md"]}
@@ -34,11 +78,22 @@ function Login() {
         </VStack>
         <FormControl>
           <FormLabel>E-mail Address</FormLabel>
-          <Input rounded="none" variant="filled"></Input>
+          <Input
+            rounded="none"
+            variant="filled"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          ></Input>
         </FormControl>
         <FormControl>
           <FormLabel>Password</FormLabel>
-          <Input type="password" rounded="none" variant="filled"></Input>
+          <Input
+            type="password"
+            rounded="none"
+            variant="filled"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          ></Input>
         </FormControl>
         <HStack w="full" justify="space-between">
           <Checkbox>Remember me.</Checkbox>
@@ -51,6 +106,7 @@ function Login() {
           colorScheme="blue"
           w={["full", "auto"]}
           alignSelf="end"
+          onClick={handleLogin}
         >
           Login
         </Button>

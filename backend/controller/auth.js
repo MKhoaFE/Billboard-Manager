@@ -3,24 +3,19 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Blacklist from "../models/blacklist.model.js";
 import _ from "../config/config.js";
-/**
- * @route POST v1/auth/register
- * @desc Registers a user
- * @access Public
- */
+
 export async function Register(req, res) {
-    // get required variables from request body
-    // using es6 object destructing
+
     const { role,email, password, username } = req.body;
     try {
-        // create an instance of a user
+
         const newUser = new User({
             email,
             password,
             role,
             username
         });
-        // Check if user already exists
+
         const existingUser = await User.findOne({ email });
         if (existingUser)
             return res.status(400).json({
@@ -48,7 +43,6 @@ export async function Register(req, res) {
 }
 
 export async function Login(req, res) {
-    // Get variables for the login process
     const { email } = req.body;
     try {
         // Check if user exists
@@ -61,22 +55,22 @@ export async function Login(req, res) {
             });
         // if user exists
         // validate password
-        const isPasswordValid = bcrypt.compare(
-            `${req.body.password}`,
+        const isPasswordValid = await bcrypt.compare(
+            req.body.password,
             user.password
         );
-        // if not valid, return unathorized response
-        if (!isPasswordValid)
+        
+        if (!isPasswordValid) {
             return res.status(401).json({
                 status: "failed",
                 data: [],
-                message:
-                    "Invalid email or password. Please try again with the correct credentials.",
+                message: "Invalid email or password. Please try again with the correct credentials.",
             });
+        }
 
         let options = {
-            maxAge: 20 * 60 * 1000, // would expire in 20minutes
-            httpOnly: true, // The cookie is only accessible by the web server
+            maxAge: 20 * 60 * 1000, 
+            httpOnly: true, 
             secure: true,
             sameSite: "None",
         };
@@ -85,13 +79,18 @@ export async function Login(req, res) {
         res.status(200).json({
             status: "success",
             message: "You have successfully logged in.",
+            data: [
+                user.email,
+                user.username,
+                user.password,
+                user.role
+            ],
         });
     } catch (err) {
         res.status(500).json({
             status: "error",
             code: 500,
-            data: [],
-            message: "Internal Server Error" + err.message,
+            message: "Internal Server Error",
         });
     }
     res.end();

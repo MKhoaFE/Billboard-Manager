@@ -9,11 +9,15 @@ import ManageWardAndDistrict from "./components/ManageWardAndDistrict";
 import NavBar from "./components/NavBar";
 import Login from "./components/LoginSignup/Login";
 import Signup from "./components/LoginSignup/Signup";
+import { UserProvider } from "./components/LoginSignup/userContext";
 
 
-
+  
 function App() {
+  
   return (
+    <UserProvider>
+
     <Router className="App">
       <NavBar/>
       <Routes>
@@ -24,6 +28,7 @@ function App() {
         <Route path="/" element={<Navigate replace to="/map"/>}/>
       </Routes>
     </Router>
+    </UserProvider>
   );
 }
 
